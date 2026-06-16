@@ -79,6 +79,34 @@ def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
     bb_accs = [a for a in range(1, 11)]   # 加速度 [1~10] 
     return bb_imgs, bb_accs
 
+def calc_orientation(org: pg.Rect, dst: pg.Rect, current_xy: tuple[float, float]) -> tuple[float, float]:
+    """
+    爆弾から終点こうかとんへの方向ベクトルを計算する
+    引数 org: 爆弾のRect
+    引数 dst: こうかとんのRect
+    引数 current_xy: 計算前の方向ベクトル (vx, vy)
+    戻り値: タプル (正規化後の方向ベクトル、または計算前の方向ベクトル)
+    """
+    # orgとdstの座標ベクトル間の差ベクトルを求める
+    dx = dst.centerx - org.centerx
+    dy = dst.centery - org.centery
+    
+    # 正規化前の差ベクトルのノルム（距離）を計算
+    dist = (dx**2 + dy**2) ** 0.5
+    
+    # 爆弾とこうかとんの距離が300未満だったら、慣性として計算前の方向を返す
+    if dist < 300:
+        return current_xy
+        
+    # 差ベクトルのノルムが√50になるように正規化する
+    if dist != 0:
+        norm = 50 ** 0.5  # √50
+        vx = norm * dx / dist
+        vy = norm * dy / dist
+        return vx, vy
+        
+    return current_xy
+
 def main():
     """ゲームのメインループ処理"""
 
@@ -148,12 +176,7 @@ def main():
         bb_rct.height = bb_img.get_rect().height
         
         # 追従する速度の計算
-        dx = kk_rct.centerx - bb_rct.centerx  # こうかとんとのX方向の距離
-        dy = kk_rct.centery - bb_rct.centery  # こうかとんとのY方向の距離
-        dist = (dx**2 + dy**2) ** 0.5         # こうかとんとの直線距離
-        if dist != 0:
-            vx = 5 * dx / dist
-            vy = 5 * dy / dist
+        vx, vy = calc_orientation(bb_rct, kk_rct, (vx, vy))
 
         # 加速度を用いて爆弾を移動
         avx = vx * bb_accs[idx]
