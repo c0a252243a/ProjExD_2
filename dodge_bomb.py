@@ -182,6 +182,13 @@ def main():
         avx = vx * bb_accs[idx]
         avy = vy * bb_accs[idx]
         bb_rct.move_ip(avx, avy)
+
+        # 爆弾の画面外判定と反射処理を追加
+        yoko, tate = check_bound(bb_rct)
+        if not yoko:
+            vx *= -1  # 横方向の壁に当たったら横の速度を反転
+        if not tate:
+            vy *= -1  # 縦方向の壁に当たったら縦の速度を反転
         screen.blit(bb_img, bb_rct)
 
         # 衝突したらgameover関数を呼び出して終了
