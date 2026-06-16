@@ -109,7 +109,7 @@ def main():
         yoko, tate = check_bound(kk_rct)
         if not yoko or not tate:
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1])
-            
+
         kk_img = kk_imgs[tuple(sum_mv)]
 
         screen.blit(kk_img, kk_rct)
@@ -119,15 +119,18 @@ def main():
         bb_rct.width = bb_img.get_rect().width
         bb_rct.height = bb_img.get_rect().height
         
+        dx = kk_rct.centerx - bb_rct.centerx  # こうかとんとのX方向の距離
+        dy = kk_rct.centery - bb_rct.centery  # こうかとんとのY方向の距離
+        dist = (dx**2 + dy**2) ** 0.5         # こうかとんとの直線距離
+        
+        if dist != 0:
+            vx = 5 * dx / dist
+            vy = 5 * dy / dist
+
         avx = vx * bb_accs[idx]
         avy = vy * bb_accs[idx]
 
         bb_rct.move_ip(avx, avy)
-        yoko, tate = check_bound(bb_rct)
-        if not yoko:
-            vx *= -1 
-        if not tate:
-            vy *= -1
 
         screen.blit(bb_img, bb_rct)
         if kk_rct.colliderect(bb_rct):
