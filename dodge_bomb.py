@@ -49,6 +49,18 @@ def gameover(screen: pg.Surface) -> None:
     
     time.sleep(5)
 
+def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
+    bb_imgs = []
+    for r in range(1, 11):
+        bb_img = pg.Surface((20 * r, 20 * r)) 
+        bb_img.fill((0, 0, 0)) 
+        pg.draw.circle(bb_img, (255, 0, 0), (10 * r, 10 * r), 10 * r)
+        bb_img.set_colorkey((0, 0, 0)) 
+        bb_imgs.append(bb_img)
+        
+    bb_accs = [a for a in range(1, 11)]
+    return bb_imgs, bb_accs
+
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -60,12 +72,11 @@ def main():
     tmr = 0
 
     import random
-    bb_img = pg.Surface((20, 20))  
-    pg.draw.circle(bb_img, (255, 0, 0), (10, 10), 10) 
-    bb_img.set_colorkey((0, 0, 0))
+    bb_imgs, bb_accs = init_bb_imgs()
+    bb_img = bb_imgs[0]
     bb_rct = bb_img.get_rect()
-    bb_rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT) 
-    vx, vy = +5, +5 
+    bb_rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
+    vx, vy = +5, +5
 
     while True:
         for event in pg.event.get():
@@ -86,11 +97,19 @@ def main():
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1])
 
         screen.blit(kk_img, kk_rct)
-        bb_rct.move_ip(vx, vy)
+        idx = min(tmr // 500, 9)
+        bb_img = bb_imgs[idx]
+        
+        bb_rct.width = bb_img.get_rect().width
+        bb_rct.height = bb_img.get_rect().height
+        
+        avx = vx * bb_accs[idx]
+        avy = vy * bb_accs[idx]
 
+        bb_rct.move_ip(avx, avy)
         yoko, tate = check_bound(bb_rct)
         if not yoko:
-            vx *= -1
+            vx *= -1 
         if not tate:
             vy *= -1
 
